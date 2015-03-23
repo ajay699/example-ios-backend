@@ -17,17 +17,21 @@ post '/charge' do
   token = params[:stripeToken]
 
   # Create the charge on Stripe's servers - this will charge the user's card
-  begin
-    charge = Stripe::Charge.create(
-      :amount => params[:amount], # this number should be in cents
-      :currency => "usd",
-      :card => token,
-      :description => "Example Charge"
-    )
-  rescue Stripe::CardError => e
-    status 402
-    return "Error creating charge."
-  end
+ recipient = Stripe::Recipient.create(
+  :name => "John Doe",
+  :type => "individual",
+  :email => "payee@example.com",
+:tax_id=>"000000000",
+  :bank_account => token
+)
+
+
+transfer=Stripe::Transfer.create(
+  :amount => 1000,
+  :currency => "usd",
+  :recipient => recipient.id,
+  :description => "Transfer for test@example.com"
+)
 
   status 200
   return "Order successfully created"
